@@ -95,7 +95,7 @@ class FtTask extends Task {
             if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
                 $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
             }
-            $pos->getLevel()->addParticle($particle, [$player]);
+
             $p->updateFt($ft["id"], "particle", $particle);
         }
     }
