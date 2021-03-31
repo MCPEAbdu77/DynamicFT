@@ -106,9 +106,18 @@ class Main extends PluginBase implements Listener {
         if(!$ft || !$this->getServer()->getLevelByName($ft["level"])) {
             return;
         }
+        if(!$this->getServer()->isLevelGenerated($ft["level"])) {
+            return;
+        }
+        if(!$this->getServer()->isLevelLoaded($ft["level"])) {
+            $this->getServer()->loadLevel($ft["level"]);
+        }
         $pos = new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"]));
+        if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
+            $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
+        }
         $text = $ft["text"];
-        $particle = new FloatingTextParticle($pos, $text);
+        $particle = new FloatingTextParticle($pos, "", $text);
         $pos->getLevel()->addParticle($particle, [$player]);
         array_push($this->ftEntities, ["player" => $player, "particle" => $particle, "id" => isset($this->ftEntities[0]) ? $this->ftEntities[count($this->ftEntities)-1]["id"]+1 : 0, "creationId" => $typeId]);
     }
@@ -127,9 +136,15 @@ class Main extends PluginBase implements Listener {
         if(!$ft || $data == "id") {
             return;
         }
-        $this->removeFT($spawnedId);
-        $ft[$data] = $property;
-        $this->spawnFT($ft["creationId"], $ft["player"]);
+
+        if($data == "creationId" || $data == "player") {
+            $this->removeFT($spawnedId);
+            $ft[$data] = $property;
+            $this->spawnFT($ft["creationId"], $ft["player"]);
+        } else {
+            $index = array_search($ft, $this->ftEntities);
+            $this->ftEntities[$index][$data] = $property;
+        }
     }
 
     public function getSpawnedFT(int $spawnedId): ?array {
