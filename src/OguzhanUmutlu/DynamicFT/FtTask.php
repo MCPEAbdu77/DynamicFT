@@ -4,6 +4,8 @@
 namespace OguzhanUmutlu\DynamicFT;
 
 
+use pocketmine\level\particle\FloatingTextParticle;
+use pocketmine\level\Position;
 use pocketmine\scheduler\Task;
 use onebone\economyapi\EconomyAPI;
 use FactionsPro\FactionMain;
@@ -75,13 +77,26 @@ class FtTask extends Task {
             if($p->config->getNested("modules.EconomyAPI") && class_exists(EconomyAPI::class)) {
                 $text = str_replace("{player.money}", EconomyAPI::getInstance()->myMoney($player), $text);
             }
-            if($p->config->getNested("modules.FactionsPro") && class_exists(FactionMain::class) && $this->getServer()->getPluginManager()->getPlugin("FactionsPro")) {
+            if($p->config->getNested("modules.FactionsPro") && class_exists(FactionMain::class) && $p->getServer()->getPluginManager()->getPlugin("FactionsPro")) {
                 $text = str_replace(["{player.faction.name}", "{player.faction.power}"], [
                     $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getPlayerFaction($player),
                     $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getFactionPower($player)
                 ], $text);
             }
-            $particle->setText($text);
+            $particle->setTitle($text);
+            $ftt = $p->getRegisteredFt($ft["creationId"]);
+            $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $p->getServer()->getLevelByName($ftt["level"]));
+            if(!$p->getServer()->isLevelGenerated($ftt["level"])) {
+                return;
+            }
+            if(!$p->getServer()->isLevelLoaded($ftt["level"])) {
+                $p->getServer()->loadLevel($ftt["level"]);
+            }
+            if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
+                $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
+            }
+            $pos->getLevel()->addParticle($particle, [$player]);
+            $p->updateFt($ft["id"], "particle", $particle);
         }
     }
 }
