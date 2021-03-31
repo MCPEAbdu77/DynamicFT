@@ -137,14 +137,11 @@ class Main extends PluginBase implements Listener {
             return;
         }
 
-        if($data == "creationId" || $data == "player") {
-            $this->removeFT($spawnedId);
-            $ft[$data] = $property;
-            $this->spawnFT($ft["creationId"], $ft["player"]);
-        } else {
-            $index = array_search($ft, $this->ftEntities);
-            $this->ftEntities[$index][$data] = $property;
-        }
+        $index = array_search($ft, $this->ftEntities);
+        $ftt = $this->getRegisteredFt($ft["creationId"]);
+        $ft[$data] = $property;
+        $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
+        $this->ftEntities[$index] = $ft;
     }
 
     public function getSpawnedFT(int $spawnedId): ?array {
