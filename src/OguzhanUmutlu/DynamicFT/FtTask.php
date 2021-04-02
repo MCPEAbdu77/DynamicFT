@@ -3,8 +3,6 @@
 
 namespace OguzhanUmutlu\DynamicFT;
 
-
-use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\level\Position;
 use pocketmine\scheduler\Task;
 use onebone\economyapi\EconomyAPI;
@@ -20,6 +18,7 @@ class FtTask extends Task {
     public function onRun(int $currentTick) {
         $p = $this->plugin;
         foreach($this->plugin->ftEntities as $ft) {
+            if(!$ft["player"]->isOnline()) return;
             $particle = $ft["particle"];
             $player = $ft["player"];
             $text = $p->getRegisteredFt($ft["creationId"])["text"];
@@ -95,7 +94,6 @@ class FtTask extends Task {
             if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
                 $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
             }
-
             $p->updateFt($ft["id"], "particle", $particle);
         }
     }
