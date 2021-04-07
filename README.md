@@ -64,8 +64,7 @@ $dynamicft->updateFt($idOfSpawnedFt, "particle", $newParticle);
 
 $dynamicft->removeFt($idOfSpawnedFt); // removes floating text for player of id
 
-$dynamicft->unregisterFt($idOfCreatedFt);
-`
+$dynamicft->unregisterFt($idOfCreatedFt);`
 
 # TODO
 
