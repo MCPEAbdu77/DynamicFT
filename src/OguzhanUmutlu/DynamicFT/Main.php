@@ -29,7 +29,7 @@ class Main extends PluginBase implements Listener {
         $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, ["data" => []]);
         $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), intval((float)$this->config->getNested("checkSeconds") * 20));
         foreach($this->ftConfig->getNested("data") as $ft) {
-            $this->registerFT($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false);
+            $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false);
         }
     }
 
@@ -137,7 +137,7 @@ class Main extends PluginBase implements Listener {
                     $sender->sendMessage("§c> Floating text not found.");
                     return true;
                 }
-                $this->unregisterFT(intval($args[1]));
+                $this->unregisterFt(intval($args[1]));
                 $sender->sendMessage("§a> Floating text removed.");
                 break;
             case "listids":
@@ -165,15 +165,14 @@ class Main extends PluginBase implements Listener {
     public function onJoin(PlayerJoinEvent $event) {
         $player = $event->getPlayer();
         foreach($this->fts as $ft) {
-            $this->spawnFT($ft["id"], $player);
+            $this->spawnFt($ft["id"], $player);
         }
     }
-    
     public function onQuit(PlayerQuitEvent $event) {
         $player = $event->getPlayer();
         foreach($this->ftEntities as $ft) {
             if($ft["player"]->getName() == $player->getName()) {
-                $this->removeFT($ft["id"]);
+                $this->removeFt($ft["id"]);
             }
         }
     }
@@ -200,12 +199,12 @@ class Main extends PluginBase implements Listener {
                 $player->sendMessage("§a> Action cancelled.");
                 return;
             }
-            $this->registerFT($message, $player->getPosition());
+            $this->registerFt($message, $player->getPosition());
             $player->sendMessage("§a> Floating text created.");
         }
     }
 
-    public function registerFT(string $text, Position $pos, bool $addToData = true): int {
+    public function registerFt(string $text, Position $pos, bool $addToData = true): int {
         if(!$this->getServer()->isLevelGenerated($pos->getLevel()->getName())) {
             return -1;
         }
@@ -227,12 +226,12 @@ class Main extends PluginBase implements Listener {
         $ft["id"] = isset($this->fts[0]) ? $this->fts[count($this->fts)-1]["id"]+1 : 0;
         array_push($this->fts, $ft);
         foreach($this->getServer()->getOnlinePlayers() as $p) {
-            $this->spawnFT($ft["id"], $p);
+            $this->spawnFt($ft["id"], $p);
         }
         return $ft["id"];
     }
 
-    public function unregisterFT(int $typeId): void {
+    public function unregisterFt(int $typeId): void {
         if(!$this->getRegisteredFt($typeId)) {
             return;
         }
@@ -251,13 +250,13 @@ class Main extends PluginBase implements Listener {
         if(!$this->getRegisteredFt($typeId) || $data == "id") {
             return;
         }
-        $this->unregisterFT($typeId);
+        $this->unregisterFt($typeId);
         $ft = $this->getRegisteredFt($typeId);
         $ft[$data] = $property;
-        $this->registerFT($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])));
+        $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])));
         foreach($this->ftEntities as $x) {
-            $this->removeFT($x["id"]);
-            $this->spawnFT($x["creationId"], $x["player"]);
+            $this->removeFt($x["id"]);
+            $this->spawnFt($x["creationId"], $x["player"]);
         }
     }
 
@@ -281,7 +280,11 @@ class Main extends PluginBase implements Listener {
         return $result;
     }
 
-    public function spawnFT(int $typeId, Player $player): void {
+    public function getAllRegisteredFts(): array {
+        return $this->fts;
+    }
+
+    public function spawnFt(int $typeId, Player $player): void {
         $ft = $this->getRegisteredFt($typeId);
         if(!$ft || !$this->getServer()->getLevelByName($ft["level"])) {
             return;
@@ -302,28 +305,28 @@ class Main extends PluginBase implements Listener {
         $this->ftEntities[] = ["player" => $player, "particle" => $particle, "id" => isset($this->ftEntities[0]) ? $this->ftEntities[count($this->ftEntities)-1]["id"]+1 : 0, "creationId" => $typeId];
     }
 
-    public function removeFT(int $spawnedId): void {
-        $ft = $this->getSpawnedFT($spawnedId);
+    public function removeFt(int $spawnedId): void {
+        $ft = $this->getSpawnedFt($spawnedId);
         if(!$ft) {
             return;
         }
         $ft["particle"]->setInvisible(true);
-        unset($this->ftEntities[$this->getSpawnedFTIndex($spawnedId)]);
+        unset($this->ftEntities[$this->getSpawnedFtIndex($spawnedId)]);
     }
 
     public function updateFt(int $spawnedId, string $data, $property): void {
-        $ft = $this->getSpawnedFT($spawnedId);
+        $ft = $this->getSpawnedFt($spawnedId);
         if(!$ft || $data == "id") {
             return;
         }
-        $index = $this->getSpawnedFTIndex($spawnedId);
+        $index = $this->getSpawnedFtIndex($spawnedId);
         $ftt = $this->getRegisteredFt($ft["creationId"]);
         $ft[$data] = $property;
         $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
         $this->ftEntities[$index] = $ft;
     }
 
-    public function getSpawnedFT(int $spawnedId): ?array {
+    public function getSpawnedFt(int $spawnedId): ?array {
         $result = null;
         foreach($this->ftEntities as $n) {
             if($n["id"] == $spawnedId) {
@@ -333,7 +336,7 @@ class Main extends PluginBase implements Listener {
         return $result;
     }
 
-    public function getSpawnedFTIndex(int $spawnedId): ?int {
+    public function getSpawnedFtIndex(int $spawnedId): ?int {
         $result = null;
         foreach($this->ftEntities as $i => $n) {
             if($n["id"] == $spawnedId) {
@@ -341,5 +344,9 @@ class Main extends PluginBase implements Listener {
             }
         }
         return $result;
+    }
+
+    public function getAllSpawnedFts(): array {
+        return $this->fts;
     }
 }
