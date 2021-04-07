@@ -25,6 +25,41 @@ remove - Removes selected floating text
 
 listids - Shows all floating texts in a list
 
+# Tags
+
+{player.name}
+{player.display_name}
+{server.online}
+{server.max_online}
+{player.item.name}
+{player.item.id}
+{player.item.meta}
+{player.item.count}
+{player.x}
+{player.y}
+{player.z}
+{player.level.name}
+{player.world.name}
+{player.level.folder_name}
+{player.world.folder_name}
+{player.level.player_count}
+{player.world.player_count}
+{player.ip}
+{player.ping}
+{time}
+{date}
+{line}
+
+EconomyAPI extension:
+
+{player.money}
+
+FactionsPro extension:
+
+{player.faction.name}
+
+{player.faction.power}
+
 # API
 
 Using plugin:
