@@ -23,8 +23,8 @@ class FtTask extends Task {
         foreach($this->plugin->ftEntities as $ft) {
             $a++;
             var_dump($a);
-            if(!$ft) return;
-            if(!$ft["player"]->isOnline()) return;
+            if(!$ft) break;
+            if(!$ft["player"]->isOnline()) break;
 
             $particle = $ft["particle"];
             $player = $ft["player"];
@@ -89,11 +89,11 @@ class FtTask extends Task {
                     $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getFactionPower($player)
                 ], $text);
             }
-            if($particle->getTitle() == $text) return;
+            if($particle->getTitle() == $text) break;
             $particle->setTitle($text);
             $ftt = $p->getRegisteredFt($ft["creationId"]);
             $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $p->getServer()->getLevelByName($ftt["level"]));
-            if(!$p->getServer()->isLevelGenerated($ftt["level"])) return;
+            if(!$p->getServer()->isLevelGenerated($ftt["level"])) break;
             if(!$p->getServer()->isLevelLoaded($ftt["level"])) {
                 $p->getServer()->loadLevel($ftt["level"]);
             }
