@@ -33,38 +33,38 @@ Using plugin:
 
 Current functions and usage:
 
-`$dynamicft = DynamicFT::getInstance();
+`$dynamicft = DynamicFT::getInstance();`
 
-$idOfCreatedFt = $dynamicft->registerFt("This is a text!", new \pocketmine\level\Position(10, 50, 20, $dynamicft->getServer()->getLevelByName("levelName"))); // result: 0
+`$idOfCreatedFt = $dynamicft->registerFt("This is a text!", new \pocketmine\level\Position(10, 50, 20, $dynamicft->getServer()->getLevelByName("levelName"))); // result: 0`
 
-$dynamicft->updateRegisteredFt($idOfCreatedFt, "text", "Now text updated!");
+`$dynamicft->updateRegisteredFt($idOfCreatedFt, "text", "Now text updated!");`
 
-$dynamicft->getRegisteredFt($idOfCreatedFt); // result: ["text" => "Now text updated!", "x" => 10, "y" => 50, "z" => 20, "level" => "levelName", "id" => 0]
+`$dynamicft->getRegisteredFt($idOfCreatedFt); // result: ["text" => "Now text updated!", "x" => 10, "y" => 50, "z" => 20, "level" => "levelName", "id" => 0]`
 
-$dynamicft->getRegisteredFtIndex($idOfCreatedFt); // result: 0
+`$dynamicft->getRegisteredFtIndex($idOfCreatedFt); // result: 0`
 
-$dynamicft->getAllRegisteredFts() // result: [["text" => "Now text updated!", "x" => 10, "y" => 50, "z" => 20, "level" => "levelName", "id" => 0]]
+`$dynamicft->getAllRegisteredFts() // result: [["text" => "Now text updated!", "x" => 10, "y" => 50, "z" => 20, "level" => "levelName", "id" => 0]]`
 
-$idOfSpawnedFt = $dynamicft->spawnFt($idOfCreatedFt, $dynamicft->getServer()->getPlayer("aPlayerName")); // if you updated or created a registered ft it will happen automatically
+`$idOfSpawnedFt = $dynamicft->spawnFt($idOfCreatedFt, $dynamicft->getServer()->getPlayer("aPlayerName")); // if you updated or created a registered ft it will happen automatically`
 
-$spawnedFt = $dynamicft->getSpawnedFt($idOfSpawnedFt); // result: ["player" => \pocketmine\Player instance, \pocketmine\level\particle\FloatingTextParticle instance, "id" => $idOfSpawnedFt, "creationId" => $idOfCreatedFt]
+`$spawnedFt = $dynamicft->getSpawnedFt($idOfSpawnedFt); // result: ["player" => \pocketmine\Player instance, \pocketmine\level\particle\FloatingTextParticle instance, "id" => $idOfSpawnedFt, "creationId" => $idOfCreatedFt]`
 
-$indexOfSpawnedFt = $dynamicft->getSpawnedFtIndex($idOfSpawnedFt); // result: 0
+`$indexOfSpawnedFt = $dynamicft->getSpawnedFtIndex($idOfSpawnedFt); // result: 0`
 
 // if they want to update particle's text(title) use update registered ft function because every second(change in config) it edits text(title)
 
-$dynamicft->updateFt($idOfSpawnedFt, "player", $dynamicft->getServer()->getPlayer("anotherPlayer"));
+`$dynamicft->updateFt($idOfSpawnedFt, "player", $dynamicft->getServer()->getPlayer("anotherPlayer"));`
 
 // they can edit text with this function:
 
-$newParticle = $spawnedFt["particle"];
-$newParticle->setText("Hi! Im the text under the title!");
+`$newParticle = $spawnedFt["particle"];
+$newParticle->setText("Hi! Im the text under the title!");`
 
-$dynamicft->updateFt($idOfSpawnedFt, "particle", $newParticle);
+`$dynamicft->updateFt($idOfSpawnedFt, "particle", $newParticle);`
 
-$dynamicft->removeFt($idOfSpawnedFt); // removes floating text for player of id
+`$dynamicft->removeFt($idOfSpawnedFt); // removes floating text for player of id`
 
-$dynamicft->unregisterFt($idOfCreatedFt);`
+`$dynamicft->unregisterFt($idOfCreatedFt);`
 
 # TODO
 
