@@ -39,6 +39,8 @@ class Main extends PluginBase implements Listener {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
     {
+        if(!isset($args[0])) $args[0] = "";
+        if($command->getName() != "dynamicft") return true;
         $args[0] = strtolower($args[0]);
         if(!isset($this->commands[$sender->getName()])) {
             $this->commands[$sender->getName()] = [];
@@ -61,6 +63,7 @@ class Main extends PluginBase implements Listener {
                     $sender->sendMessage("§c> You don't have permission to edit floating texts.");
                     return true;
                 }
+                if(!isset($args[1])) $args[1] = "";
                 switch($args[1]) {
                     case "tphere":
                     case "tpme":
@@ -126,15 +129,15 @@ class Main extends PluginBase implements Listener {
                     $sender->sendMessage("§c> You don't have permission to remove floating texts.");
                     return true;
                 }
-                if (!isset($args[1])) {
+                if (!isset($args[1]) || !is_numeric($args[1])) {
                     $sender->sendMessage("§c> Usage: /dft remove [ id ]");
                     return true;
                 }
-                if (!$this->getRegisteredFt(intval($args[2]))) {
+                if (!$this->getRegisteredFt(intval($args[1]))) {
                     $sender->sendMessage("§c> Floating text not found.");
                     return true;
                 }
-                $this->unregisterFT(intval($args[2]));
+                $this->unregisterFT(intval($args[1]));
                 $sender->sendMessage("§a> Floating text removed.");
                 break;
             case "listids":
@@ -148,7 +151,7 @@ class Main extends PluginBase implements Listener {
                 }
                 $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
                 foreach($list[intval($args[1])-1] as $item) {
-                    $sender->sendMessage("§a> ID: " . $item["id"] . ", Text: " . $item["text"]);
+                    $sender->sendMessage("§a> ID: " . $item["id"] . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
                 }
                 $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
                 break;
@@ -181,6 +184,7 @@ class Main extends PluginBase implements Listener {
             return;
         }
         if(isset($this->commands[$player->getName()]["editText"]) && $this->commands[$player->getName()]["editText"]) {
+            $event->setCancelled(true);
             if($message == "\$cancel") {
                 $this->commands[$player->getName()]["editText"] = false;
                 $player->sendMessage("§a> Action cancelled.");
@@ -189,6 +193,7 @@ class Main extends PluginBase implements Listener {
             $this->updateRegisteredFt($this->commands[$player->getName()]["editText"]["id"], "text", $message);
             $player->sendMessage("§a> Floating text's text updated.");
         } else if(isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
+            $event->setCancelled(true);
             if($message == "\$cancel") {
                 $this->commands[$player->getName()]["create"] = false;
                 $player->sendMessage("§a> Action cancelled.");
@@ -212,9 +217,7 @@ class Main extends PluginBase implements Listener {
         $ft = ["text" => $text, "x" => $pos->getX(), "y" => $pos->getY(), "z" => $pos->getZ(), "level" => $pos->getLevel()->getFolderName()];
         $a = $this->ftConfig->getNested("data");
         array_push($a, $ft);
-        foreach($this->getServer()->getOnlinePlayers() as $p) {
-            $this->spawnFT($ft["id"], $p);
-        }
+
         if($addToData) {
             $this->ftConfig->setNested("data", $a);
             $this->ftConfig->save();
@@ -222,6 +225,9 @@ class Main extends PluginBase implements Listener {
         }
         $ft["id"] = isset($this->fts[0]) ? $this->fts[count($this->fts)-1]["id"]+1 : 0;
         array_push($this->fts, $ft);
+        foreach($this->getServer()->getOnlinePlayers() as $p) {
+            $this->spawnFT($ft["id"], $p);
+        }
         return $ft["id"];
     }
 
@@ -255,8 +261,23 @@ class Main extends PluginBase implements Listener {
     }
 
     public function getRegisteredFt(int $typeId): ?array {
-        $results = array_filter($this->fts, function($n) use ($typeId){return $n["id"] == $typeId;});
-        return isset($results[0]) ? $results[0] : null;
+        $result = null;
+        foreach($this->fts as $n) {
+            if($n["id"] == $typeId) {
+                $result = $n;
+            }
+        }
+        return $result;
+    }
+
+    public function getRegisteredFtIndex(int $typeId): ?int {
+        $result = null;
+        foreach($this->fts as $i => $n) {
+            if($n["id"] == $typeId) {
+                $result = $i;
+            }
+        }
+        return $result;
     }
 
     public function spawnFT(int $typeId, Player $player): void {
@@ -277,7 +298,7 @@ class Main extends PluginBase implements Listener {
         $text = $ft["text"];
         $particle = new FloatingTextParticle($pos, "", $text);
         $pos->getLevel()->addParticle($particle, [$player]);
-        array_push($this->ftEntities, ["player" => $player, "particle" => $particle, "id" => isset($this->ftEntities[0]) ? $this->ftEntities[count($this->ftEntities)-1]["id"]+1 : 0, "creationId" => $typeId]);
+        $this->ftEntities[] = ["player" => $player, "particle" => $particle, "id" => isset($this->ftEntities[0]) ? $this->ftEntities[count($this->ftEntities)-1]["id"]+1 : 0, "creationId" => $typeId];
     }
 
     public function removeFT(int $spawnedId): void {
@@ -286,7 +307,7 @@ class Main extends PluginBase implements Listener {
             return;
         }
         $ft["particle"]->setInvisible(true);
-        unset($this->ftEntities[array_search($ft, $this->ftEntities)]);
+        unset($this->ftEntities[$this->getSpawnedFTIndex($spawnedId)]);
     }
 
     public function updateFt(int $spawnedId, string $data, $property): void {
@@ -294,8 +315,7 @@ class Main extends PluginBase implements Listener {
         if(!$ft || $data == "id") {
             return;
         }
-
-        $index = array_search($ft, $this->ftEntities);
+        $index = $this->getSpawnedFTIndex($spawnedId);
         $ftt = $this->getRegisteredFt($ft["creationId"]);
         $ft[$data] = $property;
         $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
@@ -303,7 +323,22 @@ class Main extends PluginBase implements Listener {
     }
 
     public function getSpawnedFT(int $spawnedId): ?array {
-        $results = array_filter($this->ftEntities, function($n) use ($spawnedId){return $n["id"] == $spawnedId;});
-        return isset($results[0]) ? $results[0] : null;
+        $result = null;
+        foreach($this->ftEntities as $n) {
+            if($n["id"] == $spawnedId) {
+                $result = $n;
+            }
+        }
+        return $result;
+    }
+
+    public function getSpawnedFTIndex(int $spawnedId): ?int {
+        $result = null;
+        foreach($this->ftEntities as $i => $n) {
+            if($n["id"] == $spawnedId) {
+                $result = $i;
+            }
+        }
+        return $result;
     }
 }
