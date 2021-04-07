@@ -347,6 +347,6 @@ class Main extends PluginBase implements Listener {
     }
 
     public function getAllSpawnedFts(): array {
-        return $this->fts;
+        return $this->ftEntities;
     }
 }
