@@ -168,6 +168,7 @@ class Main extends PluginBase implements Listener {
             $this->spawnFT($ft["id"], $player);
         }
     }
+    
     public function onQuit(PlayerQuitEvent $event) {
         $player = $event->getPlayer();
         foreach($this->ftEntities as $ft) {
