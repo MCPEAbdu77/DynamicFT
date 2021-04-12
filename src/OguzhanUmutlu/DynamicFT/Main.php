@@ -2,17 +2,17 @@
 
 namespace OguzhanUmutlu\DynamicFT;
 
+use pocketmine\Player;
+use pocketmine\utils\Config;
+use pocketmine\level\Position;
+use pocketmine\event\Listener;
 use pocketmine\command\Command;
+use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\level\particle\FloatingTextParticle;
-use pocketmine\Player;
-use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
-use pocketmine\level\Position;
-use pocketmine\event\Listener;
 
 class Main extends PluginBase implements Listener {
     public $ftEntities = [];
@@ -37,10 +37,8 @@ class Main extends PluginBase implements Listener {
         return self::$instance;
     }
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
-    {
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if(!isset($args[0])) $args[0] = "";
-        if($command->getName() != "dynamicft") return true;
         $args[0] = strtolower($args[0]);
         if(!isset($this->commands[$sender->getName()])) {
             $this->commands[$sender->getName()] = [];
@@ -67,15 +65,19 @@ class Main extends PluginBase implements Listener {
                 switch($args[1]) {
                     case "tphere":
                     case "tpme":
-                        if(!$sender->hasPermission($command->getPermission().".edit.tphere")) {
+                        if (!$sender instanceof Player) {
+                            $sender->sendMessage("§c> Please use this command in-game.");
+                            return true;
+                        }
+                        if (!$sender->hasPermission($command->getPermission() . ".edit.tphere")) {
                             $sender->sendMessage("§c> You don't have permission to edit floating texts' position.");
                             return true;
                         }
-                        if(!isset($args[2])) {
+                        if (!isset($args[2])) {
                             $sender->sendMessage("§c> Usage: /dft edit tpme [ id ]");
                             return true;
                         }
-                        if(!$this->getRegisteredFt(intval($args[2]))) {
+                        if (!$this->getRegisteredFt(intval($args[2]))) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
@@ -168,6 +170,7 @@ class Main extends PluginBase implements Listener {
             $this->spawnFt($ft["id"], $player);
         }
     }
+
     public function onQuit(PlayerQuitEvent $event) {
         $player = $event->getPlayer();
         foreach($this->ftEntities as $ft) {
