@@ -27,7 +27,7 @@ class Main extends PluginBase implements Listener {
         $this->config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["checkSeconds" => 1, "modules" => ["EconomyAPI" => false, "FactionsPro" => false]]);
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, ["data" => []]);
-        $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), intval((float)$this->config->getNested("checkSeconds") * 20));
+        $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), (int)((float)$this->config->getNested("checkSeconds") * 20));
         foreach($this->ftConfig->getNested("data") as $ft) {
             $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false);
         }
@@ -73,33 +73,34 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> You don't have permission to edit floating texts' position.");
                             return true;
                         }
-                        if (!isset($args[2])) {
-                            $sender->sendMessage("§c> Usage: /dft edit tpme [ id ]");
-                            return true;
-                        }
-                        if (!$this->getRegisteredFt(intval($args[2]))) {
-                            $sender->sendMessage("§c> Floating text not found.");
-                            return true;
-                        }
-                        $this->updateRegisteredFt(intval($args[2]), "x", intval($sender->getX()));
-                        $this->updateRegisteredFt(intval($args[2]), "y", intval($sender->getY()));
-                        $this->updateRegisteredFt(intval($args[2]), "z", intval($sender->getZ()));
-                        $sender->sendMessage("§a> Teleported floating text to you.");
-                        break;
+                    if (!isset($args[2])) {
+                        $sender->sendMessage("§c> Usage: /dft edit tpme [ id ]");
+                        return true;
+                    }
+                    if (!$this->getRegisteredFt((int)$args[2])) {
+                        $sender->sendMessage("§c> Floating text not found.");
+                        return true;
+                    }
+                    $this->updateRegisteredFt((int)$args[2], "x", (int)$sender->getX());
+                    $this->updateRegisteredFt((int)$args[2], "y", (int)$sender->getY());
+                    $this->updateRegisteredFt((int)$args[2], "z", (int)$sender->getZ());
+                    $sender->sendMessage("§a> Teleported floating text to you.");
+                    break;
                     case "tpto":
                         if(!$sender->hasPermission($command->getPermission().".edit.tpto")) {
                             $sender->sendMessage("§c> You don't have permission to teleporting floating texts.");
                             return true;
                         }
-                        if(!isset($args[2])) {
+                        if (!isset($args[2])) {
                             $sender->sendMessage("§c> Usage: /dft edit tpto [ id ]");
                             return true;
                         }
-                        if(!$this->getRegisteredFt(intval($args[2]))) {
+                        if (!$this->getRegisteredFt((int)$args[2])) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $sender->teleport(new Position($this->getRegisteredFt(intval($args[2]))["x"], $this->getRegisteredFt(intval($args[2]))["y"], $this->getRegisteredFt(intval($args[2]))["z"], $this->getServer()->getLevelByName($this->getRegisteredFt(intval($args[2]))["level"])));
+                        $rft = $this->getRegisteredFt((int)$args[2]);
+                        $sender->teleport(new Position($rft["x"], $rft["y"], $rft["z"], $this->getServer()->getLevelByName($rft["level"])));
                         $sender->sendMessage("§a> Teleported you to floating text.");
                         break;
                     case "text":
@@ -107,16 +108,16 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> You don't have permission to teleporting floating texts.");
                             return true;
                         }
-                        if(!isset($args[2])) {
+                        if (!isset($args[2])) {
                             $sender->sendMessage("§c> Usage: /dft edit text [ id ]");
                             return true;
                         }
-                        if(!$this->getRegisteredFt(intval($args[2]))) {
+                        if (!$this->getRegisteredFt((int)$args[2])) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
                         $sender->sendMessage("§e> Type new text of floating text to chat. To cancel type \$cancel to chat.");
-                        $this->commands[$sender->getName()]["editText"] = $this->getRegisteredFt(intval($args[2]));
+                        $this->commands[$sender->getName()]["editText"] = $this->getRegisteredFt((int)$args[2]);
                         break;
                     default:
                         $sender->sendMessage("§c> Usage: /dft edit [ tphere, tpto, text ]");
@@ -131,16 +132,16 @@ class Main extends PluginBase implements Listener {
                     $sender->sendMessage("§c> You don't have permission to remove floating texts.");
                     return true;
                 }
-                if (!isset($args[1]) || !is_numeric($args[1])) {
-                    $sender->sendMessage("§c> Usage: /dft remove [ id ]");
-                    return true;
-                }
-                if (!$this->getRegisteredFt(intval($args[1]))) {
-                    $sender->sendMessage("§c> Floating text not found.");
-                    return true;
-                }
-                $this->unregisterFt(intval($args[1]));
-                $sender->sendMessage("§a> Floating text removed.");
+            if (!isset($args[1]) || !is_numeric($args[1])) {
+                $sender->sendMessage("§c> Usage: /dft remove [ id ]");
+                return true;
+            }
+            if (!$this->getRegisteredFt((int)$args[1])) {
+                $sender->sendMessage("§c> Floating text not found.");
+                return true;
+            }
+            $this->unregisterFt((int)$args[1]);
+            $sender->sendMessage("§a> Floating text removed.");
                 break;
             case "listids":
                 $list = array_chunk($this->fts, 5);
@@ -152,7 +153,7 @@ class Main extends PluginBase implements Listener {
                     return true;
                 }
                 $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
-                foreach($list[intval($args[1])-1] as $item) {
+                foreach ($list[(int)$args[1] - 1] as $item) {
                     $sender->sendMessage("§a> ID: " . $item["id"] . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
                 }
                 $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
