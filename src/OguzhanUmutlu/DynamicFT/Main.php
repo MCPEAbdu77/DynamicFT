@@ -203,6 +203,7 @@ class Main extends PluginBase implements Listener {
                 $player->sendMessage("§a> Action cancelled.");
                 return;
             }
+            $this->commands[$player->getName()]["create"] = false;
             $this->registerFt($message, $player->getPosition());
             $player->sendMessage("§a> Floating text created.");
         }
