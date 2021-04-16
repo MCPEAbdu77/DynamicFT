@@ -145,6 +145,10 @@ class Main extends PluginBase implements Listener {
                 break;
             case "listids":
                 $list = array_chunk($this->fts, 5);
+                if(count($list) < 1) {
+                    $sender->sendMessage("§c> There is no dynamic floating text.");
+                    return true;
+                }
                 if(!isset($args[1])) {
                     $args[1] = "1";
                 }
@@ -239,6 +243,12 @@ class Main extends PluginBase implements Listener {
     public function unregisterFt(int $typeId): void {
         if(!$this->getRegisteredFt($typeId)) {
             return;
+        }
+        foreach($this->ftEntities as $ftt) {
+            if($ftt["creationId"] == $typeId) {
+                var_dump($ftt["id"]);
+                $this->removeFt($ftt["id"]);
+            }
         }
         $a = $this->ftConfig->getNested("data");
         $ft = $this->getRegisteredFt($typeId);

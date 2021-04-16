@@ -82,7 +82,7 @@ class FtTask extends Task {
                         $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getFactionPower($player)
                     ], $text);
                 }
-                if($particle->getTitle() != $text) {
+                if($particle->getTitle() != $text && $p->getRegisteredFt($ft["creationId"])) {
                     $particle->setTitle($text);
                     $ftt = $p->getRegisteredFt($ft["creationId"]);
                     $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $p->getServer()->getLevelByName($ftt["level"]));
@@ -95,6 +95,8 @@ class FtTask extends Task {
                         }
                         $p->updateFt($ft["id"], "particle", $particle);
                     }
+                } else if(!$p->getRegisteredFt($ft["creationId"])) {
+                    $p->removeFt($ft["id"]);
                 }
             }
         }
