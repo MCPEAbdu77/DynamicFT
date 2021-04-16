@@ -1,7 +1,7 @@
 ---
 name: DynamicFT
 api: 3.0.0
-version: 1.0.1
+version: 1.0.2
 main: OguzhanUmutlu\DynamicFT\Main
 author: OguzhanUmutlu
 description: Customizable floating text plugin for PocketMine-MP
@@ -9,6 +9,8 @@ commands:
   dynamicft:
     description: "Manage floating texts"
     permission: dynamicft.cmd
+    aliases:
+    - dft
 permissions:
   dynamicft.cmd:
     description: "Manage floating texts"
