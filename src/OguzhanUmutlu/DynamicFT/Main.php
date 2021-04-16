@@ -245,8 +245,7 @@ class Main extends PluginBase implements Listener {
             return;
         }
         foreach($this->ftEntities as $ftt) {
-            if($ftt["creationId"] == $typeId) {
-                var_dump($ftt["id"]);
+            if($ftt["creationId"] === $typeId) {
                 $this->removeFt($ftt["id"]);
             }
         }
@@ -265,8 +264,8 @@ class Main extends PluginBase implements Listener {
         if(!$this->getRegisteredFt($typeId) || $data == "id") {
             return;
         }
-        $this->unregisterFt($typeId);
         $ft = $this->getRegisteredFt($typeId);
+        $this->unregisterFt($typeId);
         $ft[$data] = $property;
         $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])));
         foreach($this->ftEntities as $x) {
@@ -326,6 +325,18 @@ class Main extends PluginBase implements Listener {
             return;
         }
         $ft["particle"]->setInvisible(true);
+        $ftt = $this->getRegisteredFt($ft["creationId"]);
+        $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $this->getServer()->getLevelByName($ftt["level"]));
+        if($this->getServer()->isLevelGenerated($ftt["level"])) {
+            if(!$this->getServer()->isLevelLoaded($ftt["level"])) {
+                $this->getServer()->loadLevel($ftt["level"]);
+            }
+            if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
+                $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
+            }
+            $this->updateFt($ft["id"], "particle", $ft["particle"]);
+        }
+
         unset($this->ftEntities[$this->getSpawnedFtIndex($spawnedId)]);
     }
 
