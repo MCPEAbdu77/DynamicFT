@@ -199,7 +199,7 @@ class Main extends PluginBase implements Listener {
                 return;
             }
             $this->commands[$player->getName()]["editText"] = false;
-            $this->updateRegisteredFt($this->commands[$player->getName()]["editText"]["id"], "text", $message);
+            $this->updateRegisteredFt($this->commands[$player->getName()]["editText"], "text", $message);
             $player->sendMessage("§a> Floating text's text updated.");
         } else if(isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
             $event->setCancelled(true);
