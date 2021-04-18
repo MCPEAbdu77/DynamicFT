@@ -109,6 +109,10 @@ class Main extends PluginBase implements Listener {
                         $sender->sendMessage("§a> Teleported floating text to you.");
                         break;
                     case "tpto":
+                        if(!$sender instanceof Player) {
+                            $sender->sendMessage("§c> Use this command in-game.");
+                            return true;
+                        }
                         if(!$sender->hasPermission($command->getPermission().".edit.tpto")) {
                             $sender->sendMessage("§c> You don't have permission to teleporting floating texts.");
                             return true;
