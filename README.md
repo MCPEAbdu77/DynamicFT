@@ -108,7 +108,7 @@ This process will be run automatically when a player joins, when a floating text
 ```php
 $spawnedFt = $dynamicft->getSpawnedFt($idOfSpawnedFt);
 ```
-This functions returns the all the floating text particle instances detail of a floating text in array
+This function returns the all the floating text particle instances detail of a floating text in array
 
 #### Result
 ```php
