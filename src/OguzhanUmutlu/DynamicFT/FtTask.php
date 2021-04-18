@@ -73,6 +73,9 @@ class FtTask extends Task {
                     ],
                     $text
                 );
+                foreach($p->getCustomTags() as $tag) {
+                    $text = str_replace($tag["tag"], $tag["function"]($player), $text);
+                }
                 if($p->config->getNested("modules.EconomyAPI") && class_exists(EconomyAPI::class)) {
                     $text = str_replace("{player.money}", EconomyAPI::getInstance()->myMoney($player), $text);
                 }
