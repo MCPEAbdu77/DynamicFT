@@ -191,6 +191,11 @@ class Main extends PluginBase implements Listener
                     return true;
                 }
                 unset($this->fts[(int)$args[1]]);
+                foreach($this->ftEntities as $i => $x) {
+                    if($x["id"] == (int)$args[1]) {
+                        $this->removeFt($i);
+                    }
+                }
                 $this->ftConfig->setAll($this->fts);
                 $this->ftConfig->save();
                 $this->ftConfig->reload();
