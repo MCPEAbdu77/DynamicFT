@@ -61,16 +61,6 @@ use OguzhanUmutlu\DynamicFT\Main as DynamicFT;
 $dynamicft = DynamicFT::getInstance();
 ```
 
-### Register floating texts / Alter floating text properties
-```php
-$idOfCreatedFt = $dynamicft->registerFt("This is a text!", new \pocketmine\level\Position(10, 50, 20, $dynamicft->getServer()->getLevelByName("levelName")));
-```
-This function returns the ID of the floating text
-
-```php
-$dynamicft->updateRegisteredFt($idOfCreatedFt, "propertyName", "Property data (mixed)");
-```
-
 #### Floating text properties
 | Property name | Data type |
 |--|--|
@@ -79,36 +69,30 @@ $dynamicft->updateRegisteredFt($idOfCreatedFt, "propertyName", "Property data (m
 | `y` | float |
 | `z` | float |
 | `level` | string *(Level folder name)* |
-| `id` | int |
 
 ### Getting floating text properties
 
 ```php
-$dynamicft->getRegisteredFt($idOfCreatedFt);
+$dynamicft->fts[$id];
 ```
 This function returns all the properties of the floating text in array
 
 ```php
-$dynamicft->getRegisteredFtIndex($idOfCreatedFt);
+$dynamicft->fts;
 ```
-This function returns the floating properties index of `fts.yml`
-
-```php
-$dynamicft->getAllRegisteredFts();
-```
-This function returns the properties of every floating text
+This function returns all floating texts
 
 ### Spawn floating texts to client (player)
 
 ```php
-$idOfSpawnedFt = $dynamicft->spawnFt($idOfCreatedFt, $dynamicft->getServer()->getPlayer("aPlayerName"));
+$idOfSpawnedFt = $dynamicft->spawnFt($id, $dynamicft->getServer()->getPlayer("aPlayerName"));
 ```
 This process will be run automatically when a player joins, when a floating text gets registered or gets updated
 
 ```php
-$spawnedFt = $dynamicft->getSpawnedFt($idOfSpawnedFt);
+$dynamicft->ftEntities[idOfSpawnedFt];
 ```
-This function returns the all the floating text particle instances detail of a floating text in array
+This returns the all the floating text particle instances detail of a floating text in array
 
 #### Result
 ```php
@@ -116,14 +100,13 @@ This function returns the all the floating text particle instances detail of a f
 [
 	"player" => \pocketmine\Player instance,
 	"particle" => \pocketmine\level\particle\FloatingTextParticle instance,
-	"id" => int,
-	"creationId" => int$idOfCreatedFt
+	"id" => int
 ]
 */
 $idOfSpawnedFt = $spawnedFt["id"];
 ```
 
-**If you want to update the text of a floating text, update with the `updateRegisteredFT()` function instead of changing the text of the floating text particle instance as it will be overwritten every second**
+**If you want to update the text of a floating text, update with the `$dynamicft->ftConfig->getAll()` and `$dynamicft->ftConfig->setAll()` functions instead of changing the text of the floating text particle instance as it will be overwritten every second**
 
 # Reporting bugs
 **You may open an issue on the floating text GitHub repository for report bugs**
