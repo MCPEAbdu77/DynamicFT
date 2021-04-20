@@ -103,9 +103,10 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $this->updateRegisteredFt((int)$args[2], "x", (int)$sender->getX());
-                        $this->updateRegisteredFt((int)$args[2], "y", (int)$sender->getY());
-                        $this->updateRegisteredFt((int)$args[2], "z", (int)$sender->getZ());
+                        $this->updateRegisteredFt((int)$args[2], "x", (float)$sender->getX());
+                        $this->updateRegisteredFt((int)$args[2], "y", (float)$sender->getY());
+                        $this->updateRegisteredFt((int)$args[2], "z", (float)$sender->getZ());
+                        $this->updateRegisteredFt((int)$args[2], "level", (string)$sender->getLevel()->getFolderName());
                         $sender->sendMessage("§a> Teleported floating text to you.");
                         break;
                     case "tpto":
