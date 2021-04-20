@@ -321,11 +321,13 @@ class Main extends PluginBase implements Listener
     {
         if (!isset($this->ftEntities[$id])) return;
         $ft = $this->ftEntities[$id];
+        if(!isset($this->fts[$ft["id"]])) return;
         $ft["particle"]->setInvisible(true);
-        $pos = new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"]));
-        if ($this->getServer()->isLevelGenerated($ft["level"])) {
-            if (!$this->getServer()->isLevelLoaded($ft["level"])) {
-                $this->getServer()->loadLevel($ft["level"]);
+        $ftt = $this->fts[$ft["id"]];
+        $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $this->getServer()->getLevelByName($ftt["level"]));
+        if ($this->getServer()->isLevelGenerated($ftt["level"])) {
+            if (!$this->getServer()->isLevelLoaded($ftt["level"])) {
+                $this->getServer()->loadLevel($ftt["level"]);
             }
             if (!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
                 $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
