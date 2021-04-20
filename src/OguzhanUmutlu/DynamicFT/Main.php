@@ -217,7 +217,7 @@ class Main extends PluginBase implements Listener {
         if(!isset($this->commands[$player->getName()])) {
             return;
         }
-        if(isset($this->commands[$player->getName()]["editText"]) && $this->commands[$player->getName()]["editText"]) {
+        if(isset($this->commands[$player->getName()]["editText"]) && !is_null($this->commands[$player->getName()]["editText"])) {
             $event->setCancelled(true);
             if($message == "\$cancel") {
                 $this->commands[$player->getName()]["editText"] = false;
