@@ -122,7 +122,7 @@ class Main extends PluginBase implements Listener
                         $this->fts[(int)$args[2]]["x"] = (float)$sender->getX();
                         $this->fts[(int)$args[2]]["y"] = (float)$sender->getY();
                         $this->fts[(int)$args[2]]["z"] = (float)$sender->getZ();
-                        $this->fts[(int)$args[2]]["level"] = (float)$sender->getLevel()->getFolderName();
+                        $this->fts[(int)$args[2]]["level"] = (string)$sender->getLevel()->getFolderName();
                         foreach($this->ftEntities as $i => $ftEntity) {
                             $this->removeFt($i);
                             $this->spawnFt((int)$args[2], $ftEntity["player"]);
