@@ -203,7 +203,10 @@ class Main extends PluginBase implements Listener
                 break;
             case "list":
             case "listids":
-                $list = array_chunk($this->fts, 5);
+                $list = array_chunk(array_map(function($n){
+                    $n["id"] = array_search($n, $this->fts);
+                    return $n;
+                }, $this->fts), 5);
                 if (count($list) < 1) {
                     $sender->sendMessage("§c> There is no dynamic floating text.");
                     return true;
@@ -217,7 +220,7 @@ class Main extends PluginBase implements Listener
                 }
                 $sender->sendMessage("§e> Floating texts, Page " . $args[1] . "/" . count($list));
                 foreach ($list[(int)$args[1] - 1] as $id => $item) {
-                    $sender->sendMessage("§a> ID: " . $id . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
+                    $sender->sendMessage("§a> ID: " . $item["id"] . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
                 }
                 $sender->sendMessage("§e> Floating texts, Page " . $args[1] . "/" . count($list));
                 break;
