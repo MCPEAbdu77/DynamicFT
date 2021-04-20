@@ -248,6 +248,7 @@ class Main extends PluginBase implements Listener {
             if(!$this->getServer()->isLevelLoaded($fixLevel)) {
                 $this->getServer()->loadLevel($fixLevel);
             }
+            if(!$pos->getLevel()) $pos->level = $this->getServer()->getLevelByName($fixLevel);
         } else {
             if(!$this->getServer()->isLevelGenerated($pos->getLevel()->getName())) {
                 return -1;
