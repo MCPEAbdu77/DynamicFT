@@ -337,12 +337,12 @@ class Main extends PluginBase implements Listener
 
     public function updateFt(int $id, string $data, $property): void
     {
-        if (!isset($this->ftEntities[$id]) || $data == "id" || !isset($this->fts[$ft["id"]])) {
+        if (!isset($this->ftEntities[$id]) || $data == "id" || !isset($this->fts[$this->ftEntities[$id]["id"]])) {
             return;
         }
         $ft = $this->ftEntities[$id];
         $ft[$data] = $property;
-        $ftt = $this->fts[$ft["id"]];
+        $ftt = $this->fts[$this->ftEntities[$id]["id"]];
         $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
         $this->ftEntities[$id] = $ft;
     }
