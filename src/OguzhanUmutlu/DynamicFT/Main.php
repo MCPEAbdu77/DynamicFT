@@ -119,19 +119,7 @@ class Main extends PluginBase implements Listener
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $this->fts[(int)$args[2]]["x"] = (float)$sender->getX();
-                        $this->fts[(int)$args[2]]["y"] = (float)$sender->getY();
-                        $this->fts[(int)$args[2]]["z"] = (float)$sender->getZ();
-                        $this->fts[(int)$args[2]]["level"] = (string)$sender->getLevel()->getFolderName();
-                        foreach ($this->ftEntities as $i => $ftEntity) {
-                            if($i == (int)$args[2]) {
-                                $this->removeFt($i);
-                                $this->spawnFt((int)$args[2], $ftEntity["player"]);
-                            }
-                        }
-                        $this->ftConfig->setAll($this->fts);
-                        $this->ftConfig->save();
-                        $this->ftConfig->reload();
+                        $this->updateEntireFt((int)$args[2], ["x" => $sender->getX(),"y" => $sender->getY(),"z" => $sender->getZ(),"level" => $sender->getLevel()->getFolderName()]);
                         $sender->sendMessage("§a> Teleported floating text to you.");
                         break;
                     case "tpto":
@@ -205,7 +193,7 @@ class Main extends PluginBase implements Listener
                 break;
             case "list":
             case "listids":
-                $list = array_chunk(array_map(function($n){
+                $list = array_chunk(array_map(function ($n) {
                     $n["id"] = array_search($n, $this->fts);
                     return $n;
                 }, $this->fts), 5);
@@ -364,7 +352,29 @@ class Main extends PluginBase implements Listener
         $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
         $this->ftEntities[$id] = $ft;
     }
-
+    private function updateEntireFt(int $id, array $data = []) {
+        foreach ($this->ftEntities as $i => $xx) {
+            if ($xx["id"] == $id) {
+                $this->removeFt($i);
+            }
+        }
+        $oldFt = $this->fts[$id];
+        unset($this->fts[$id]);
+        $newFt = [
+            "x" => $data["x"] ?? $oldFt["x"],
+            "y" => $data["y"] ?? $oldFt["y"],
+            "z" => $data["z"] ?? $oldFt["z"],
+            "level" => $data["level"] ?? $oldFt["level"],
+            "text" => $data["text"] ?? $oldFt["text"]
+        ];
+        $this->fts[] = $newFt;
+        foreach ($this->getServer()->getOnlinePlayers() as $player) {
+            $this->spawnFt(array_search($newFt, $this->fts), $player);
+        }
+        $this->ftConfig->setAll($this->fts);
+        $this->ftConfig->save();
+        $this->ftConfig->reload();
+    }
     public function getAllSpawnedFts(): array
     {
         return $this->ftEntities;
