@@ -31,7 +31,7 @@ class Main extends PluginBase implements Listener
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, []);
         $this->fts = $this->ftConfig->getAll();
-        if (isset($this->fts["data"])) {
+        if(isset($this->fts["data"])) {
             $this->fts = $this->fts["data"];
             $this->ftConfig->setAll($this->fts);
             $this->ftConfig->save();
@@ -119,11 +119,11 @@ class Main extends PluginBase implements Listener
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $this->updateFt((int)$args[2], "x", (float)$sender->getX());
-                        $this->updateFt((int)$args[2], "y", (float)$sender->getY());
-                        $this->updateFt((int)$args[2], "z", (float)$sender->getZ());
-                        $this->updateFt((int)$args[2], "level", (string)$sender->getLevel()->getFolderName());
-                        foreach ($this->ftEntities as $i => $ftEntity) {
+                        $this->fts[(int)$args[2]]["x"] = (float)$sender->getX();
+                        $this->fts[(int)$args[2]]["y"] = (float)$sender->getY();
+                        $this->fts[(int)$args[2]]["z"] = (float)$sender->getZ();
+                        $this->fts[(int)$args[2]]["level"] = (string)$sender->getLevel()->getFolderName();
+                        foreach($this->ftEntities as $i => $ftEntity) {
                             $this->removeFt($i);
                             $this->spawnFt((int)$args[2], $ftEntity["player"]);
                         }
@@ -261,8 +261,8 @@ class Main extends PluginBase implements Listener
                 return;
             }
             $this->fts[$this->commands[$player->getName()]["editText"]]["text"] = $message;
-            foreach ($this->ftEntities as $ftEntity) {
-                if ($ftEntity["id"] == $this->commands[$player->getName()]["editText"]) {
+            foreach($this->ftEntities as $ftEntity) {
+                if($ftEntity["id"] == $this->commands[$player->getName()]["editText"]) {
                     $this->removeFt($ftEntity["id"]);
                     $this->spawnFt($ftEntity["id"], $ftEntity["player"]);
                 }
@@ -288,7 +288,7 @@ class Main extends PluginBase implements Listener
                 "text" => $message
             ];
             $this->fts[] = $newFt;
-            foreach ($this->getServer()->getOnlinePlayers() as $player) {
+            foreach($this->getServer()->getOnlinePlayers() as $player) {
                 $this->spawnFt(array_search($newFt, $this->fts), $player);
             }
             $this->ftConfig->setAll($this->fts);
@@ -321,7 +321,7 @@ class Main extends PluginBase implements Listener
     {
         if (!isset($this->ftEntities[$id])) return;
         $ft = $this->ftEntities[$id];
-        if (!isset($this->fts[$ft["id"]])) return;
+        if(!isset($this->fts[$ft["id"]])) return;
         $ft["particle"]->setInvisible(true);
         $ftt = $this->fts[$ft["id"]];
         $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $this->getServer()->getLevelByName($ftt["level"]));
