@@ -14,7 +14,8 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\level\particle\FloatingTextParticle;
 
-class Main extends PluginBase implements Listener {
+class Main extends PluginBase implements Listener
+{
     public $ftEntities = [];
     public $ftConfig;
     public $fts = [];
@@ -23,54 +24,69 @@ class Main extends PluginBase implements Listener {
     private $customTags = [];
     static $instance;
 
-    public function onEnable(): void {
+    public function onEnable(): void
+    {
         self::$instance = $this;
         $this->config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["checkSeconds" => 1, "modules" => ["EconomyAPI" => false, "FactionsPro" => false]]);
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, ["data" => []]);
-        $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), (int)((float)$this->config->getNested("checkSeconds") * 20));
-        foreach($this->ftConfig->getNested("data") as $ft) {
-            $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false, $ft["level"]);
+        $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, []);
+        $this->fts = $this->ftConfig->getAll();
+        if(isset($this->fts["data"])) {
+            $this->fts = $this->fts["data"];
+            $this->ftConfig->setAll($this->fts);
+            $this->ftConfig->save();
+            $this->ftConfig->reload();
+            $this->getLogger()->notice("Config version successfully updated! ;)");
         }
+        $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), (int)((float)$this->config->getNested("checkSeconds") * 20));
     }
 
-    static function getInstance() {
+    static function getInstance()
+    {
         return self::$instance;
     }
 
-    public function getCustomTags(): array {
-        return array_map(function($n){return ["tag" => $n["tag"], "function" => $n["function"]];}, $this->customTags);
+    public function getCustomTags(): array
+    {
+        return array_map(function ($n) {
+            return ["tag" => $n["tag"], "function" => $n["function"]];
+        }, $this->customTags);
     }
 
-    public function addCustomTag(string $tag, callable $function): bool {
-        if(isset($this->customTags[$tag])) return false;
+    public function addCustomTag(string $tag, callable $function): bool
+    {
+        if (isset($this->customTags[$tag])) return false;
         $this->customTags[$tag] = ["tag" => $tag, "function" => $function];
         return true;
     }
 
-    public function changeCustomTag(string $tag, callable $function): bool {
-        if(!isset($this->customTags[$tag])) return false;
+    public function changeCustomTag(string $tag, callable $function): bool
+    {
+        if (!isset($this->customTags[$tag])) return false;
         $this->customTags[$tag] = ["tag" => $tag, "function" => $function];
         return true;
     }
 
-    public function deleteCustomTag(string $tag): bool {
-        if(!isset($this->customTags[$tag])) return false;
+    public function deleteCustomTag(string $tag): bool
+    {
+        if (!isset($this->customTags[$tag])) return false;
         unset($this->customTags[$tag]);
         return true;
     }
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
-        if(!isset($args[0])) $args[0] = "";
+
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
+    {
+        if (!isset($args[0])) $args[0] = "";
         $args[0] = strtolower($args[0]);
-        if(!isset($this->commands[$sender->getName()])) {
+        if (!isset($this->commands[$sender->getName()])) {
             $this->commands[$sender->getName()] = [];
         }
-        switch($args[0]) {
+        switch ($args[0]) {
             case "spawn":
             case "create":
             case "s":
             case "c":
-                if(!$sender->hasPermission($command->getPermission().".create")) {
+                if (!$sender->hasPermission($command->getPermission() . ".create")) {
                     $sender->sendMessage("§c> You don't have permission to create floating texts.");
                     return true;
                 }
@@ -79,12 +95,12 @@ class Main extends PluginBase implements Listener {
                 break;
             case "edit":
             case "e":
-                if(!$sender->hasPermission($command->getPermission().".edit")) {
+                if (!$sender->hasPermission($command->getPermission() . ".edit")) {
                     $sender->sendMessage("§c> You don't have permission to edit floating texts.");
                     return true;
                 }
-                if(!isset($args[1])) $args[1] = "";
-                switch($args[1]) {
+                if (!isset($args[1])) $args[1] = "";
+                switch ($args[1]) {
                     case "tphere":
                     case "tpme":
                         if (!$sender instanceof Player) {
@@ -99,22 +115,29 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> Usage: /dft edit tpme [ id ]");
                             return true;
                         }
-                        if (!$this->getRegisteredFt((int)$args[2])) {
+                        if (!isset($this->fts[(int)$args[2]])) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $this->updateRegisteredFt((int)$args[2], "x", (float)$sender->getX());
-                        $this->updateRegisteredFt((int)$args[2], "y", (float)$sender->getY());
-                        $this->updateRegisteredFt((int)$args[2], "z", (float)$sender->getZ());
-                        $this->updateRegisteredFt((int)$args[2], "level", (string)$sender->getLevel()->getFolderName());
+                        $this->fts[(int)$args[2]]["x"] = (float)$sender->getX();
+                        $this->fts[(int)$args[2]]["y"] = (float)$sender->getY();
+                        $this->fts[(int)$args[2]]["z"] = (float)$sender->getZ();
+                        $this->fts[(int)$args[2]]["level"] = (float)$sender->getLevel()->getFolderName();
+                        foreach($this->ftEntities as $i => $ftEntity) {
+                            $this->removeFt($i);
+                            $this->spawnFt((int)$args[2], $ftEntity["player"]);
+                        }
+                        $this->ftConfig->setAll($this->fts);
+                        $this->ftConfig->save();
+                        $this->ftConfig->reload();
                         $sender->sendMessage("§a> Teleported floating text to you.");
                         break;
                     case "tpto":
-                        if(!$sender instanceof Player) {
+                        if (!$sender instanceof Player) {
                             $sender->sendMessage("§c> Use this command in-game.");
                             return true;
                         }
-                        if(!$sender->hasPermission($command->getPermission().".edit.tpto")) {
+                        if (!$sender->hasPermission($command->getPermission() . ".edit.tpto")) {
                             $sender->sendMessage("§c> You don't have permission to teleporting floating texts.");
                             return true;
                         }
@@ -122,16 +145,16 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> Usage: /dft edit tpto [ id ]");
                             return true;
                         }
-                        if (!$this->getRegisteredFt((int)$args[2])) {
+                        if (!isset($this->fts[(int)$args[2]])) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
-                        $rft = $this->getRegisteredFt((int)$args[2]);
+                        $rft = $this->fts[(int)$args[2]];
                         $sender->teleport(new Position($rft["x"], $rft["y"], $rft["z"], $this->getServer()->getLevelByName($rft["level"])));
                         $sender->sendMessage("§a> Teleported you to floating text.");
                         break;
                     case "text":
-                        if(!$sender->hasPermission($command->getPermission().".edit.text")) {
+                        if (!$sender->hasPermission($command->getPermission() . ".edit.text")) {
                             $sender->sendMessage("§c> You don't have permission to teleporting floating texts.");
                             return true;
                         }
@@ -139,7 +162,7 @@ class Main extends PluginBase implements Listener {
                             $sender->sendMessage("§c> Usage: /dft edit text [ id ]");
                             return true;
                         }
-                        if (!$this->getRegisteredFt((int)$args[2])) {
+                        if (!isset($this->fts[(int)$args[2]])) {
                             $sender->sendMessage("§c> Floating text not found.");
                             return true;
                         }
@@ -163,31 +186,35 @@ class Main extends PluginBase implements Listener {
                     $sender->sendMessage("§c> Usage: /dft remove [ id ]");
                     return true;
                 }
-                if (!$this->getRegisteredFt((int)$args[1])) {
+                if (!isset($this->fts[(int)$args[1]])) {
                     $sender->sendMessage("§c> Floating text not found.");
                     return true;
                 }
-                $this->unregisterFt((int)$args[1]);
+                unset($this->fts[(int)$args[1]]);
+                $this->ftConfig->setAll($this->fts);
+                $this->ftConfig->save();
+                $this->ftConfig->reload();
                 $sender->sendMessage("§a> Floating text removed.");
                 break;
+            case "list":
             case "listids":
                 $list = array_chunk($this->fts, 5);
-                if(count($list) < 1) {
+                if (count($list) < 1) {
                     $sender->sendMessage("§c> There is no dynamic floating text.");
                     return true;
                 }
-                if(!isset($args[1])) {
+                if (!isset($args[1])) {
                     $args[1] = "1";
                 }
-                if(!is_numeric($args[1])) {
-                    $sender->sendMessage("§c> Usage: /dft listids [ page (1/".count($list)."): number ]");
+                if (!is_numeric($args[1])) {
+                    $sender->sendMessage("§c> Usage: /dft listids [ page (1/" . count($list) . "): number ]");
                     return true;
                 }
-                $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
-                foreach ($list[(int)$args[1] - 1] as $item) {
-                    $sender->sendMessage("§a> ID: " . $item["id"] . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
+                $sender->sendMessage("§e> Floating texts, Page " . $args[1] . "/" . count($list));
+                foreach ($list[(int)$args[1] - 1] as $id => $item) {
+                    $sender->sendMessage("§a> ID: " . $id . ", Text: " . $item["text"] . ", X: " . $item["x"] . ", Y: " . $item["y"] . ", Z: " . $item["z"] . ", Level: " . $item["level"]);
                 }
-                $sender->sendMessage("§e> Floating texts, Page ".$args[1]."/".count($list));
+                $sender->sendMessage("§e> Floating texts, Page " . $args[1] . "/" . count($list));
                 break;
             default:
                 $sender->sendMessage("§c> Usage: /dft [ create, edit, remove, listids ]");
@@ -196,221 +223,132 @@ class Main extends PluginBase implements Listener {
         return true;
     }
 
-    public function onJoin(PlayerJoinEvent $event) {
+    public function onJoin(PlayerJoinEvent $event)
+    {
         $player = $event->getPlayer();
-        foreach($this->fts as $ft) {
-            $this->spawnFt($ft["id"], $player);
+        foreach ($this->fts as $id => $ft) {
+            $this->spawnFt($id, $player);
         }
     }
 
-    public function onQuit(PlayerQuitEvent $event) {
+    public function onQuit(PlayerQuitEvent $event)
+    {
         $player = $event->getPlayer();
-        foreach($this->ftEntities as $ft) {
-            if($ft["player"]->getName() == $player->getName()) {
+        foreach ($this->ftEntities as $ft) {
+            if ($ft["player"]->getName() == $player->getName()) {
                 $this->removeFt($ft["id"]);
             }
         }
     }
 
-    public function onChat(PlayerChatEvent $event) {
+    public function onChat(PlayerChatEvent $event)
+    {
         $player = $event->getPlayer();
         $message = $event->getMessage();
-        if(!isset($this->commands[$player->getName()])) {
+        if (!isset($this->commands[$player->getName()])) {
             return;
         }
-        if(isset($this->commands[$player->getName()]["editText"]) && !is_null($this->commands[$player->getName()]["editText"])) {
+        if (isset($this->commands[$player->getName()]["editText"]) && !is_null($this->commands[$player->getName()]["editText"])) {
             $event->setCancelled(true);
-            if($message == "\$cancel") {
+            if ($message == "\$cancel") {
                 $this->commands[$player->getName()]["editText"] = false;
                 $player->sendMessage("§a> Action cancelled.");
                 return;
             }
-            $this->updateRegisteredFt($this->commands[$player->getName()]["editText"], "text", $message);
+            if (!isset($this->commands[$player->getName()]["editText"])) {
+                $this->commands[$player->getName()]["editText"] = false;
+                $player->sendMessage("§c> DFT not found.");
+                return;
+            }
+            $this->fts[$this->commands[$player->getName()]["editText"]]["text"] = $message;
+            foreach($this->ftEntities as $ftEntity) {
+                if($ftEntity["id"] == $this->commands[$player->getName()]["editText"]) {
+                    $this->removeFt($ftEntity["id"]);
+                    $this->spawnFt($ftEntity["id"], $ftEntity["player"]);
+                }
+            }
+            $this->ftConfig->setAll($this->fts);
+            $this->ftConfig->save();
+            $this->ftConfig->reload();
             $this->commands[$player->getName()]["editText"] = false;
             $player->sendMessage("§a> Floating text's text updated.");
-        } else if(isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
+        } else if (isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
             $event->setCancelled(true);
-            if($message == "\$cancel") {
+            if ($message == "\$cancel") {
                 $this->commands[$player->getName()]["create"] = false;
                 $player->sendMessage("§a> Action cancelled.");
                 return;
             }
             $this->commands[$player->getName()]["create"] = false;
-            $this->registerFt($message, $player->getPosition());
+            $newFt = [
+                "x" => $player->getX(),
+                "y" => $player->getY(),
+                "z" => $player->getZ(),
+                "level" => $player->getLevel()->getFolderName(),
+                "text" => $message
+            ];
+            $this->fts[] = $newFt;
+            foreach($this->getServer()->getOnlinePlayers() as $player) {
+                $this->spawnFt(array_search($newFt, $this->fts), $player);
+            }
+            $this->ftConfig->setAll($this->fts);
+            $this->ftConfig->save();
+            $this->ftConfig->reload();
             $player->sendMessage("§a> Floating text created.");
         }
     }
 
-    public function registerFt(string $text, Position $pos, bool $addToData = true, $fixLevel = null): int {
-        if($fixLevel) {
-            if(!$this->getServer()->isLevelGenerated($fixLevel)) {
-                return -1;
-            }
-            if(!$this->getServer()->isLevelLoaded($fixLevel)) {
-                $this->getServer()->loadLevel($fixLevel);
-            }
-            if(!$pos->getLevel()) $pos->level = $this->getServer()->getLevelByName($fixLevel);
-        } else {
-            if(!$this->getServer()->isLevelGenerated($pos->getLevel()->getName())) {
-                return -1;
-            }
-            if(!$this->getServer()->isLevelLoaded($pos->getLevel()->getName())) {
-                $this->getServer()->loadLevel($pos->getLevel()->getName());
-            }
-        }
-        if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
-            $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
-        }
-        $ft = ["text" => $text, "x" => $pos->getX(), "y" => $pos->getY(), "z" => $pos->getZ(), "level" => $pos->getLevel()->getFolderName()];
-        $a = $this->ftConfig->getNested("data");
-        array_push($a, $ft);
-
-        if($addToData) {
-            $this->ftConfig->setNested("data", $a);
-            $this->ftConfig->save();
-            $this->ftConfig->reload();
-        }
-        $ft["id"] = isset($this->fts[0]) ? $this->fts[count($this->fts)-1]["id"]+1 : 0;
-        array_push($this->fts, $ft);
-        foreach($this->getServer()->getOnlinePlayers() as $p) {
-            $this->spawnFt($ft["id"], $p);
-        }
-        return $ft["id"];
-    }
-
-    public function unregisterFt(int $typeId): void {
-        if(!$this->getRegisteredFt($typeId)) {
+    public function spawnFt(int $id, Player $player): void
+    {
+        if (!isset($this->fts[$id])) return;
+        $ft = $this->fts[$id];
+        if (!$this->getServer()->isLevelGenerated($ft["level"])) {
             return;
         }
-        foreach($this->ftEntities as $ftt) {
-            if($ftt["creationId"] === $typeId) {
-                $this->removeFt($ftt["id"]);
-            }
-        }
-        $a = $this->ftConfig->getNested("data");
-        $ft = $this->getRegisteredFt($typeId);
-        unset($ft["id"]);
-        unset($a[array_search($ft, $a)]);
-        $this->ftConfig->setNested("data", $a);
-        $this->ftConfig->save();
-        $this->ftConfig->reload();
-        $ft["id"] = $typeId;
-        unset($this->fts[array_search($ft, $this->fts)]);
-    }
-
-    public function updateRegisteredFt(int $typeId, string $data, $property): void {
-        if(!$this->getRegisteredFt($typeId) || $data == "id") {
-            return;
-        }
-        $ft = $this->getRegisteredFt($typeId);
-        $this->unregisterFt($typeId);
-        $ft[$data] = $property;
-        $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])));
-        foreach($this->ftEntities as $x) {
-            $this->removeFt($x["id"]);
-            $this->spawnFt($x["creationId"], $x["player"]);
-        }
-    }
-
-    public function getRegisteredFt(int $typeId): ?array {
-        $result = null;
-        foreach($this->fts as $n) {
-            if($n["id"] == $typeId) {
-                $result = $n;
-            }
-        }
-        return $result;
-    }
-
-    public function getRegisteredFtIndex(int $typeId): ?int {
-        $result = null;
-        foreach($this->fts as $i => $n) {
-            if($n["id"] == $typeId) {
-                $result = $i;
-            }
-        }
-        return $result;
-    }
-
-    public function getAllRegisteredFts(): array {
-        return $this->fts;
-    }
-
-    public function spawnFt(int $typeId, Player $player): void {
-        $ft = $this->getRegisteredFt($typeId);
-        if(!$ft || !$this->getServer()->getLevelByName($ft["level"])) {
-            return;
-        }
-        if(!$this->getServer()->isLevelGenerated($ft["level"])) {
-            return;
-        }
-        if(!$this->getServer()->isLevelLoaded($ft["level"])) {
+        if (!$this->getServer()->isLevelLoaded($ft["level"])) {
             $this->getServer()->loadLevel($ft["level"]);
         }
         $pos = new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"]));
-        if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
+        if (!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
             $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
         }
-        $text = $ft["text"];
-        $particle = new FloatingTextParticle($pos, "", $text);
+        $particle = new FloatingTextParticle($pos, "", $ft["text"]);
         $pos->getLevel()->addParticle($particle, [$player]);
-        $this->ftEntities[] = ["player" => $player, "particle" => $particle, "id" => isset($this->ftEntities[0]) ? $this->ftEntities[count($this->ftEntities)-1]["id"]+1 : 0, "creationId" => $typeId];
+        $this->ftEntities[] = ["player" => $player, "particle" => $particle, "id" => $id];
     }
 
-    public function removeFt(int $spawnedId): void {
-        $ft = $this->getSpawnedFt($spawnedId);
-        if(!$ft) {
-            return;
-        }
+    public function removeFt(int $id): void
+    {
+        if (!isset($this->ftEntities[$id])) return;
+        $ft = $this->ftEntities[$id];
         $ft["particle"]->setInvisible(true);
-        $ftt = $this->getRegisteredFt($ft["creationId"]);
-        $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $this->getServer()->getLevelByName($ftt["level"]));
-        if($this->getServer()->isLevelGenerated($ftt["level"])) {
-            if(!$this->getServer()->isLevelLoaded($ftt["level"])) {
-                $this->getServer()->loadLevel($ftt["level"]);
+        $pos = new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"]));
+        if ($this->getServer()->isLevelGenerated($ft["level"])) {
+            if (!$this->getServer()->isLevelLoaded($ft["level"])) {
+                $this->getServer()->loadLevel($ft["level"]);
             }
-            if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
+            if (!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
                 $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
             }
             $this->updateFt($ft["id"], "particle", $ft["particle"]);
         }
-
-        unset($this->ftEntities[$this->getSpawnedFtIndex($spawnedId)]);
+        unset($this->ftEntities[$id]);
     }
 
-    public function updateFt(int $spawnedId, string $data, $property): void {
-        $ft = $this->getSpawnedFt($spawnedId);
-        if(!$ft || $data == "id") {
+    public function updateFt(int $id, string $data, $property): void
+    {
+        if (!isset($this->ftEntities[$id]) || $data == "id" || !isset($this->fts[$ft["id"]])) {
             return;
         }
-        $index = $this->getSpawnedFtIndex($spawnedId);
-        $ftt = $this->getRegisteredFt($ft["creationId"]);
+        $ft = $this->ftEntities[$id];
         $ft[$data] = $property;
+        $ftt = $this->fts[$ft["id"]];
         $this->getServer()->getLevelByName($ftt["level"])->addParticle($ft["particle"], [$ft["player"]]);
-        $this->ftEntities[$index] = $ft;
+        $this->ftEntities[$id] = $ft;
     }
 
-    public function getSpawnedFt(int $spawnedId): ?array {
-        $result = null;
-        foreach($this->ftEntities as $n) {
-            if($n["id"] == $spawnedId) {
-                $result = $n;
-            }
-        }
-        return $result;
-    }
-
-    public function getSpawnedFtIndex(int $spawnedId): ?int {
-        $result = null;
-        foreach($this->ftEntities as $i => $n) {
-            if($n["id"] == $spawnedId) {
-                $result = $i;
-            }
-        }
-        return $result;
-    }
-
-    public function getAllSpawnedFts(): array {
+    public function getAllSpawnedFts(): array
+    {
         return $this->ftEntities;
     }
 }

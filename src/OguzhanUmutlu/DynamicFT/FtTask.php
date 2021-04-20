@@ -21,7 +21,11 @@ class FtTask extends Task {
             if($ft && $ft["player"]->isOnline()) {
                 $particle = $ft["particle"];
                 $player = $ft["player"];
-                $text = $p->getRegisteredFt($ft["creationId"])["text"];
+                if(!isset($p->fts[$ft["id"]])) {
+                    $p->removeFt($ft["id"]);
+                }
+                $ftt = $p->fts[$ft["id"]];
+                $text = $ftt["text"];
                 $text = str_replace(
                     [
                         "{player.name}",
@@ -85,9 +89,8 @@ class FtTask extends Task {
                         $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getFactionPower($player)
                     ], $text);
                 }
-                if($particle->getTitle() != $text && $p->getRegisteredFt($ft["creationId"])) {
+                if($particle->getTitle() != $text) {
                     $particle->setTitle($text);
-                    $ftt = $p->getRegisteredFt($ft["creationId"]);
                     $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $p->getServer()->getLevelByName($ftt["level"]));
                     if($p->getServer()->isLevelGenerated($ftt["level"])) {
                         if(!$p->getServer()->isLevelLoaded($ftt["level"])) {
@@ -98,8 +101,6 @@ class FtTask extends Task {
                         }
                         $p->updateFt($ft["id"], "particle", $particle);
                     }
-                } else if(!$p->getRegisteredFt($ft["creationId"])) {
-                    $p->removeFt($ft["id"]);
                 }
             }
         }
