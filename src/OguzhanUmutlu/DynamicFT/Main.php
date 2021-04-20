@@ -124,8 +124,10 @@ class Main extends PluginBase implements Listener
                         $this->fts[(int)$args[2]]["z"] = (float)$sender->getZ();
                         $this->fts[(int)$args[2]]["level"] = (string)$sender->getLevel()->getFolderName();
                         foreach ($this->ftEntities as $i => $ftEntity) {
-                            $this->removeFt($i);
-                            $this->spawnFt((int)$args[2], $ftEntity["player"]);
+                            if($i == (int)$args[2]) {
+                                $this->removeFt($i);
+                                $this->spawnFt((int)$args[2], $ftEntity["player"]);
+                            }
                         }
                         $this->ftConfig->setAll($this->fts);
                         $this->ftConfig->save();
