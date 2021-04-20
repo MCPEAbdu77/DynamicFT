@@ -30,7 +30,7 @@ class Main extends PluginBase implements Listener {
         $this->ftConfig = new Config($this->getDataFolder() . "fts.yml", Config::YAML, ["data" => []]);
         $this->getScheduler()->scheduleRepeatingTask(new FtTask($this), (int)((float)$this->config->getNested("checkSeconds") * 20));
         foreach($this->ftConfig->getNested("data") as $ft) {
-            $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false);
+            $this->registerFt($ft["text"], new Position($ft["x"], $ft["y"], $ft["z"], $this->getServer()->getLevelByName($ft["level"])), false, $ft["level"]);
         }
     }
 
@@ -240,12 +240,21 @@ class Main extends PluginBase implements Listener {
         }
     }
 
-    public function registerFt(string $text, Position $pos, bool $addToData = true): int {
-        if(!$this->getServer()->isLevelGenerated($pos->getLevel()->getName())) {
-            return -1;
-        }
-        if(!$this->getServer()->isLevelLoaded($pos->getLevel()->getName())) {
-            $this->getServer()->loadLevel($pos->getLevel()->getName());
+    public function registerFt(string $text, Position $pos, bool $addToData = true, $fixLevel = null): int {
+        if($fixLevel) {
+            if(!$this->getServer()->isLevelGenerated($fixLevel)) {
+                return -1;
+            }
+            if(!$this->getServer()->isLevelLoaded($fixLevel)) {
+                $this->getServer()->loadLevel($fixLevel);
+            }
+        } else {
+            if(!$this->getServer()->isLevelGenerated($pos->getLevel()->getName())) {
+                return -1;
+            }
+            if(!$this->getServer()->isLevelLoaded($pos->getLevel()->getName())) {
+                $this->getServer()->loadLevel($pos->getLevel()->getName());
+            }
         }
         if(!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
             $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
