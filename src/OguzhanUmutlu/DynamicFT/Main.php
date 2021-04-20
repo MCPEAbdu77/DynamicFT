@@ -337,7 +337,7 @@ class Main extends PluginBase implements Listener
             if (!$pos->getLevel()->isChunkLoaded($pos->getX() >> 4, $pos->getZ() >> 4)) {
                 $pos->getLevel()->loadChunk($pos->getX() >> 4, $pos->getZ() >> 4);
             }
-            $this->updateFt($ft["id"], "particle", $ft["particle"]);
+            $this->updateFt($id, "particle", $ft["particle"]);
         }
         unset($this->ftEntities[$id]);
     }
