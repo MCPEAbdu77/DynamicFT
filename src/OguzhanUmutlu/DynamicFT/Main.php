@@ -143,7 +143,7 @@ class Main extends PluginBase implements Listener {
                             return true;
                         }
                         $sender->sendMessage("§e> Type new text of floating text to chat. To cancel type \$cancel to chat.");
-                        $this->commands[$sender->getName()]["editText"] = $this->getRegisteredFt((int)$args[2]);
+                        $this->commands[$sender->getName()]["editText"] = (int)$args[2];
                         break;
                     default:
                         $sender->sendMessage("§c> Usage: /dft edit [ tphere, tpto, text ]");
