@@ -89,6 +89,7 @@ class FtTask extends Task {
                             $p->getServer()->getPluginManager()->getPlugin("FactionsPro")->getFactionPower($player)
                         ], $text);
                     }
+                    
                     if($particle->getTitle() != $text) {
                         $particle->setTitle($text);
                         $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $p->getServer()->getLevelByName($ftt["level"]));
