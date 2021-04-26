@@ -2,6 +2,7 @@
 
 namespace OguzhanUmutlu\DynamicFT;
 
+use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\Player;
 use pocketmine\utils\Config;
 use pocketmine\level\Position;
@@ -215,7 +216,6 @@ class Main extends PluginBase implements Listener
                 $sender->sendMessage("§e> Floating texts, Page " . $args[1] . "/" . count($list));
                 break;
             default:
-                var_dump($this->ftEntities, $this->fts);
                 $sender->sendMessage("§c> Usage: /dft [ create, edit, remove, listids ]");
                 break;
         }
@@ -226,7 +226,9 @@ class Main extends PluginBase implements Listener
     {
         $player = $event->getPlayer();
         foreach ($this->fts as $id => $ft) {
-            $this->spawnFt($id, $player);
+            if($this->fts[$id]["level"] == $player->getLevel()->getFolderName()) {
+                $this->spawnFt($id, $player);
+            }
         }
     }
 
@@ -236,6 +238,25 @@ class Main extends PluginBase implements Listener
         foreach ($this->ftEntities as $ft) {
             if ($ft["player"]->getName() == $player->getName()) {
                 $this->removeFt($ft["id"]);
+            }
+        }
+    }
+
+    public function onLevelChange(EntityLevelChangeEvent $e) {
+        $player = $e->getEntity();
+        if(!$player instanceof Player) return;
+        $from = $e->getOrigin();
+        $to = $e->getTarget();
+        foreach($this->ftEntities as $id => $ft) {
+            if(isset($this->fts[$ft["id"]])) {
+                if($this->fts[$ft["id"]]["level"] == $from->getFolderName()) {
+                    $this->removeFt($id);
+                }
+            }
+        }
+        foreach($this->fts as $id => $ft) {
+            if($ft["level"] == $to->getFolderName()) {
+                $this->spawnFt($id, $player);
             }
         }
     }
@@ -273,12 +294,11 @@ class Main extends PluginBase implements Listener
             $player->sendMessage("§a> Floating text's text updated.");
         } else if (isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
             $event->setCancelled(true);
+            $this->commands[$player->getName()]["create"] = false;
             if ($message == "\$cancel") {
-                $this->commands[$player->getName()]["create"] = false;
                 $player->sendMessage("§a> Action cancelled.");
                 return;
             }
-            $this->commands[$player->getName()]["create"] = false;
             $newFt = [
                 "x" => $player->getX(),
                 "y" => $player->getY(),
@@ -320,14 +340,11 @@ class Main extends PluginBase implements Listener
     {
         if (!isset($this->ftEntities[$id])) return;
         $ft = $this->ftEntities[$id];
-        var_dump(987);
         if (!isset($this->fts[$ft["id"]])) return;
         $ft["particle"]->setInvisible(true);
-        var_dump(999);
         $ftt = $this->fts[$ft["id"]];
         $pos = new Position($ftt["x"], $ftt["y"], $ftt["z"], $this->getServer()->getLevelByName($ftt["level"]));
         if ($this->getServer()->isLevelGenerated($ftt["level"])) {
-            var_dump(99);
             if (!$this->getServer()->isLevelLoaded($ftt["level"])) {
                 $this->getServer()->loadLevel($ftt["level"]);
             }
@@ -341,11 +358,9 @@ class Main extends PluginBase implements Listener
 
     public function updateFt(int $id, string $data, $property): void
     {
-        var_dump(9999);
         if (!isset($this->ftEntities[$id]) || $data == "id" || !isset($this->fts[$this->ftEntities[$id]["id"]])) {
             return;
         }
-        var_dump(99999);
         $ft = $this->ftEntities[$id];
         $ft[$data] = $property;
         $ftt = $this->fts[$this->ftEntities[$id]["id"]];
