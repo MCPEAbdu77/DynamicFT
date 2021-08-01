@@ -333,7 +333,7 @@ class Main extends PluginBase implements Listener
         }
         $particle = new FloatingTextParticle($pos, "", $ft["text"]);
         $pos->getLevel()->addParticle($particle, [$player]);
-        $this->ftEntities[] = ["player" => $player, "particle" => $particle, "id" => $id];
+        $this->ftEntities[$id] = ["player" => $player, "particle" => $particle, "id" => $id];
     }
 
     public function removeFt(int $id): void
