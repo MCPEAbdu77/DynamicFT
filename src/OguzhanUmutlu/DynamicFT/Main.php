@@ -313,7 +313,8 @@ class Main extends PluginBase implements Listener
             $this->ftConfig->setAll($this->fts);
             $this->ftConfig->save();
             $this->ftConfig->reload();
-            $player->sendMessage("§a> Floating text created.");
+            $id = array_search($newFt, $this->fts);
+            $player->sendMessage("§a> Floating text created with ID: " . $id);
         }
     }
 
