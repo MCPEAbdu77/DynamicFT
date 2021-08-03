@@ -301,7 +301,7 @@ class Main extends PluginBase implements Listener
             }
             $newFt = [
                 "x" => $player->getX(),
-                "y" => $player->getY(),
+                "y" => $player->getY()+1,
                 "z" => $player->getZ(),
                 "level" => $player->getLevel()->getFolderName(),
                 "text" => $message
