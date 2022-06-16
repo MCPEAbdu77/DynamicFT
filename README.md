@@ -1,9 +1,5 @@
 
 # DynamicFT
-[![](https://poggit.pmmp.io/shield.state/DynamicFT)](https://poggit.pmmp.io/p/DynamicFT)
-[![](https://poggit.pmmp.io/shield.api/DynamicFT)](https://poggit.pmmp.io/p/DynamicFT)
-[![](https://poggit.pmmp.io/shield.dl.total/DynamicFT)](https://poggit.pmmp.io/p/DynamicFT)
-[![](https://poggit.pmmp.io/shield.dl/DynamicFT)](https://poggit.pmmp.io/p/DynamicFT)
 
 A useful PocketMine-MP plugin that allow user to create customizable dynamic floating text easily!
 
@@ -36,8 +32,6 @@ Sub commands:
 - `{player.world.folder_name}`
 - `{player.level.player_count}`
 - `{player.world.player_count}`
-- `{player.ip}`
-- `{player.ping}`
 - `{time}`
 - `{date}`
 - `{line}`
@@ -110,4 +104,4 @@ $idOfSpawnedFt = $spawnedFt["id"];
 
 # Reporting bugs
 **You may open an issue on the floating text GitHub repository for report bugs**
-https://github.com/OguzhanUmutlu/DynamicFT/issues
+https://github.com/MCPEAbdu77/DynamicFT/issues
