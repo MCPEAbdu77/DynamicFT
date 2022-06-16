@@ -122,7 +122,7 @@ class Main extends PluginBase implements Listener
 							$sender->sendMessage("§c> Floating text not found.");
 							return true;
 						}
-						$this->updateEntireFt((int)$args[2], ["x" => $sender->getX(), "y" => $sender->getY(), "z" => $sender->getZ(), "level" => $sender->getWorld()->getFolderName()]);
+						$this->updateEntireFt((int)$args[2], ["x" => $sender->getPosition()->getX(), "y" => $sender->getPosition()->getY(), "z" => $sender->getPosition()->getZ(), "level" => $sender->getWorld()->getFolderName()]);
 						$sender->sendMessage("§a> Teleported floating text to you.");
 						break;
 					case "tpto":
@@ -143,7 +143,7 @@ class Main extends PluginBase implements Listener
 							return true;
 						}
 						$rft = $this->fts[(int)$args[2]];
-						$sender->teleport(new Position($rft["x"], $rft["y"], $rft["z"], $this->getServer()->getWorldByName($rft["level"])));
+						$sender->teleport(new Position($rft["x"], $rft["y"], $rft["z"], $this->getServer()->getWorldManager()->getWorldByName($rft["level"])));
 						$sender->sendMessage("§a> Teleported you to floating text.");
 						break;
 					case "text":
@@ -249,7 +249,7 @@ class Main extends PluginBase implements Listener
 		$player = $e->getEntity();
 		if (!$player instanceof Player) return;
 		$from = $e->getFrom()->getWorld();
-		$to = $e->getTarget()->getWorld();
+		$to = $e->getTo()->getWorld();
 		foreach ($this->ftEntities as $id => $ft) {
 			if (isset($this->fts[$ft["id"]])) {
 				if ($this->fts[$ft["id"]]["level"] == $from->getFolderName()) {
@@ -273,7 +273,7 @@ class Main extends PluginBase implements Listener
 			return;
 		}
 		if (isset($this->commands[$player->getName()]["editText"]) && !is_null($this->commands[$player->getName()]["editText"])) {
-			$event->setCancelled(true);
+			$event->cancel();
 			if ($message == "\$cancel") {
 				$this->commands[$player->getName()]["editText"] = false;
 				$player->sendMessage("§a> Action cancelled.");
@@ -297,7 +297,7 @@ class Main extends PluginBase implements Listener
 			$this->commands[$player->getName()]["editText"] = false;
 			$player->sendMessage("§a> Floating text's text updated.");
 		} else if (isset($this->commands[$player->getName()]["create"]) && $this->commands[$player->getName()]["create"]) {
-			$event->isCancelled(true);
+			$event->cancel();
 			$this->commands[$player->getName()]["create"] = false;
 			if ($message == "\$cancel") {
 				$player->sendMessage("§a> Action cancelled.");
