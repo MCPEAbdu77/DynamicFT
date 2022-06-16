@@ -1,9 +1,9 @@
 ---
 name: DynamicFT
-api: 3.0.0
-version: 1.0.6
-main: OguzhanUmutlu\DynamicFT\Main
-author: OguzhanUmutlu
+api: 4.0.0
+version: 1.0
+main: MCA7\DynamicFT\Main
+author: OguzhanUmutlu , MCA7
 description: Customizable floating text plugin for PocketMine-MP
 commands:
   dynamicft:
