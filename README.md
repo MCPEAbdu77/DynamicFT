@@ -48,7 +48,7 @@ Sub commands:
 ### Getting the plugin main class
 
 ```php
-use OguzhanUmutlu\DynamicFT\Main as DynamicFT;
+use MCA7\DynamicFT\Main as DynamicFT;
 ```
 
 ```php
@@ -93,7 +93,7 @@ This returns the all the floating text particle instances detail of a floating t
 /*
 [
 	"player" => \pocketmine\Player instance,
-	"particle" => \pocketmine\level\particle\FloatingTextParticle instance,
+	"particle" => \pocketmine\world\particle\FloatingTextParticle instance,
 	"id" => int
 ]
 */
