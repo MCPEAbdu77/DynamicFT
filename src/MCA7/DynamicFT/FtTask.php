@@ -48,6 +48,8 @@ class FtTask extends Task
 							"{player.world.folder_name}",
 							"{player.level.player_count}",
 							"{player.world.player_count}",
+                                                        "{player.ip}",
+                                                        "{player.ping}",
 							"{time}",
 							"{date}",
 							"{line}"
@@ -70,6 +72,8 @@ class FtTask extends Task
 							$player->getWorld()->getFolderName(),
 							count($player->getWorld()->getPlayers()),
 							count($player->getWorld()->getPlayers()),
+                                                        $player->getNetworkSession()->getIp(),
+                                                        $player->getNetworkSession()->getPing(),
 							date("h:i:s A"),
 							date("j/n/Y"),
 							"\n"
