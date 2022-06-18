@@ -32,6 +32,8 @@ Sub commands:
 - `{player.world.folder_name}`
 - `{player.level.player_count}`
 - `{player.world.player_count}`
+- `{player.ip}`
+- `{player.ping}`
 - `{time}`
 - `{date}`
 - `{line}`
